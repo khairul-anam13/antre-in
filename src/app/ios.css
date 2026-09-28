@@ -1,0 +1,128 @@
+/* iOS Design System — glassmorphism component styles. Every value reads a token from tokens.css.
+   Kaca = latar tembus (glass-bg*) + backdrop blur + tepi 0.5px (glass-border) + kilau atas (glass-highlight) + shadow-glass. */
+.ios-root, .ios-btn, .ios-list, .ios-switch, .ios-seg, .ios-nav, .ios-tabbar, .ios-search, .ios-alert, .ios-card {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+.ios-root *, .ios-root *::before, .ios-root *::after { box-sizing: border-box; }
+
+/* ---------- Button ---------- */
+.ios-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-4);
+  border: 0; margin: 0; cursor: pointer; font-weight: 600; letter-spacing: -0.41px;
+  transition: transform .15s ease, filter .15s ease, opacity .15s ease; white-space: nowrap;
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(180%); backdrop-filter: blur(var(--blur-glass)) saturate(180%);
+}
+.ios-btn--small  { height: 28px; padding: 0 12px; font-size: 15px; letter-spacing: -0.24px; border-radius: var(--radius-full); }
+.ios-btn--medium { height: 36px; padding: 0 16px; font-size: 15px; letter-spacing: -0.24px; border-radius: var(--radius-full); }
+.ios-btn--large  { height: 52px; padding: 0 24px; font-size: 17px; border-radius: var(--radius-full); min-width: 220px; }
+.ios-btn--filled { background: var(--glass-tint); color: #ffffff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), inset 0 0 0 0.5px rgba(255, 255, 255, 0.25), var(--shadow-glass); }
+.ios-btn--tinted { background: var(--glass-bg); color: var(--tint); box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass); }
+.ios-btn--gray   { background: var(--glass-bg-subtle); color: var(--label); box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border); }
+.ios-btn--plain  { background: transparent; color: var(--tint); font-weight: 400; padding-left: 0; padding-right: 0; min-width: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.ios-btn--filled.ios-btn--destructive { background: var(--glass-red); }
+.ios-btn--tinted.ios-btn--destructive, .ios-btn--gray.ios-btn--destructive, .ios-btn--plain.ios-btn--destructive { color: var(--system-red); }
+.ios-btn:active { transform: scale(0.96); filter: brightness(0.95); }
+.ios-btn--plain:active { transform: none; opacity: var(--opacity-pressed); }
+.ios-btn:focus-visible { outline: 3px solid var(--system-blue-accessible); outline-offset: 2px; }
+.ios-btn:disabled { cursor: default; background: var(--glass-bg-subtle); color: var(--label-tertiary); filter: none; transform: none; box-shadow: inset 0 0 0 0.5px var(--glass-border); }
+.ios-btn--plain:disabled { background: transparent; box-shadow: none; }
+
+/* ---------- GlassCard ---------- */
+.ios-card { position: relative; padding: var(--space-16) var(--space-20); border-radius: var(--radius-22); color: var(--label);
+  background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(180%); backdrop-filter: blur(var(--blur-glass)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass); }
+.ios-card--strong { background: var(--glass-bg-strong); -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); }
+.ios-card--subtle { background: var(--glass-bg-subtle); box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border); }
+.ios-card__eyebrow { font-size: 13px; line-height: 18px; letter-spacing: -0.08px; font-weight: 600; color: var(--label); opacity: .75; margin: 0 0 var(--space-4); }
+.ios-card__title { font-family: var(--font-display); font-size: 20px; line-height: 25px; font-weight: 600; letter-spacing: 0.38px; margin: 0; }
+.ios-card__body { font-size: 15px; line-height: 20px; letter-spacing: -0.24px; margin: var(--space-4) 0 0; }
+
+/* ---------- List / ListRow ---------- */
+.ios-list { margin: 0 0 var(--space-24); }
+.ios-list__header { padding: 0 var(--space-16) 7px; font-size: 13px; line-height: 18px; letter-spacing: -0.08px; font-weight: 600; text-transform: uppercase; color: var(--label); opacity: .75; }
+.ios-list__footer { padding: 7px var(--space-16) 0; font-size: 13px; line-height: 18px; letter-spacing: -0.08px; color: var(--label); opacity: .75; }
+.ios-list__body { border-radius: var(--radius-22); overflow: hidden;
+  background: var(--glass-bg); -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(180%); backdrop-filter: blur(var(--blur-glass)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass); }
+.ios-list--plain .ios-list__body { border-radius: 0; box-shadow: inset 0 0.5px 0 var(--glass-border), inset 0 -0.5px 0 var(--glass-border); }
+.ios-row { display: flex; align-items: center; padding-left: var(--space-16); color: var(--label); font-size: 17px; line-height: 22px; letter-spacing: -0.41px; background: transparent; width: 100%; border: 0; text-align: left; font-family: inherit; }
+.ios-row--tappable { cursor: pointer; transition: background .15s ease; }
+.ios-row--tappable:active { background: var(--glass-bg-subtle); }
+.ios-row__icon { flex: none; width: var(--icon-row); height: var(--icon-row); border-radius: var(--radius-7); margin-right: var(--space-16); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 15px; font-weight: 600; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+.ios-row__main { flex: 1; min-width: 0; display: flex; align-items: center; gap: var(--space-8); min-height: var(--row-height); padding: 11px var(--space-16) 11px 0; box-shadow: inset 0 calc(-1 * var(--hairline)) 0 var(--separator); }
+.ios-row:last-child .ios-row__main { box-shadow: none; }
+.ios-row__text { flex: 1; min-width: 0; }
+.ios-row__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ios-row__subtitle { font-size: 15px; line-height: 20px; letter-spacing: -0.24px; color: var(--label); opacity: .7; }
+.ios-row__detail { color: var(--label); opacity: .6; white-space: nowrap; }
+.ios-row--destructive .ios-row__title { color: var(--system-red); }
+.ios-row--action .ios-row__title { color: var(--tint); }
+.ios-row__chevron { flex: none; width: 8px; height: 14px; color: var(--label); opacity: .35; }
+.ios-row__check { flex: none; width: 15px; height: 14px; color: var(--tint); }
+
+/* ---------- Switch ---------- */
+.ios-switch { position: relative; flex: none; width: 51px; height: 31px; padding: 0; border: 0; border-radius: var(--radius-full); cursor: pointer; transition: background .2s ease;
+  background: var(--glass-bg-subtle); box-shadow: inset 0 0 0 0.5px var(--glass-border), inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  -webkit-backdrop-filter: blur(var(--blur-glass)); backdrop-filter: blur(var(--blur-glass)); }
+.ios-switch[aria-checked="true"] { background: var(--system-green); box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.25); }
+.ios-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: var(--radius-full); background: #ffffff; box-shadow: var(--shadow-knob), inset 0 -1px 0 rgba(0, 0, 0, 0.04); transition: transform .25s cubic-bezier(.3,.7,.4,1.2); }
+.ios-switch[aria-checked="true"]::after { transform: translateX(20px); }
+.ios-switch:disabled { opacity: var(--opacity-disabled); cursor: default; }
+.ios-switch:focus-visible { outline: 3px solid var(--system-blue-accessible); outline-offset: 2px; }
+
+/* ---------- SegmentedControl ---------- */
+.ios-seg { display: flex; padding: 3px; gap: 0; height: 36px; border-radius: var(--radius-full);
+  background: var(--glass-bg-subtle); -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(180%); backdrop-filter: blur(var(--blur-glass)) saturate(180%);
+  box-shadow: inset 0 0 0 0.5px var(--glass-border); }
+.ios-seg__item { flex: 1; min-width: 0; border: 0; background: transparent; border-radius: var(--radius-full); font-family: inherit; font-size: 13px; letter-spacing: -0.08px; color: var(--label); cursor: pointer; padding: 0 var(--space-8); transition: background .2s ease, box-shadow .2s ease; }
+.ios-seg__item[aria-selected="true"] { background: var(--glass-bg-strong); box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-thumb); font-weight: 600; }
+.ios-seg__item:focus-visible { outline: 2px solid var(--system-blue-accessible); }
+
+/* ---------- NavigationBar ---------- */
+.ios-nav { color: var(--label); background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%);
+  box-shadow: inset 0 calc(-1 * var(--hairline)) 0 var(--glass-border); }
+.ios-nav--large { box-shadow: none; background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.ios-nav__bar { position: relative; display: flex; align-items: center; justify-content: space-between; height: var(--nav-bar-height); padding: 0 var(--space-16) 0 var(--space-8); }
+.ios-nav__side { display: flex; align-items: center; gap: var(--space-16); min-width: 44px; font-size: 17px; letter-spacing: -0.41px; color: var(--tint); z-index: 1; }
+.ios-nav__side--trailing { justify-content: flex-end; }
+.ios-nav__title { position: absolute; left: 88px; right: 88px; text-align: center; font-size: 17px; font-weight: 600; letter-spacing: -0.41px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ios-nav__large { font-family: var(--font-display); font-size: 34px; line-height: 41px; font-weight: 700; letter-spacing: 0.37px; padding: 3px var(--space-16) 8px; }
+.ios-nav__back { display: inline-flex; align-items: center; gap: 5px; background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
+.ios-nav__back svg { width: 12px; height: 20px; }
+
+/* ---------- TabBar (floating glass capsule) ---------- */
+.ios-tabbar { display: flex; gap: 2px; height: 62px; padding: 5px; margin: 0 var(--space-16); border-radius: var(--radius-full);
+  background: var(--glass-bg-strong); -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass); }
+.ios-tabbar__item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: 0; border-radius: var(--radius-full); background: none; color: var(--label); font-family: inherit; font-size: 10px; font-weight: 600; letter-spacing: 0.1px; cursor: pointer; transition: background .2s ease; }
+.ios-tabbar__item svg { width: 24px; height: 24px; }
+.ios-tabbar__item[aria-selected="true"] { color: var(--tint); background: var(--glass-bg-subtle); box-shadow: inset 0 0 0 0.5px var(--glass-border); }
+
+/* ---------- SearchField ---------- */
+.ios-search { display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 var(--space-12); border-radius: var(--radius-full); color: var(--label);
+  background: var(--glass-bg-subtle); -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(180%); backdrop-filter: blur(var(--blur-glass)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border); }
+.ios-search svg { flex: none; width: 17px; height: 17px; opacity: .7; }
+.ios-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-family: inherit; font-size: 17px; letter-spacing: -0.41px; color: var(--label); }
+.ios-search input::placeholder { color: var(--label); opacity: .55; }
+.ios-search:focus-within { box-shadow: inset 0 1px 0 var(--glass-highlight), 0 0 0 2px var(--tint); }
+
+/* ---------- Alert ---------- */
+.ios-alert { width: 290px; border-radius: var(--radius-28); color: var(--label); overflow: hidden; text-align: center; padding-bottom: var(--space-12);
+  background: var(--glass-bg-strong); -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass); }
+.ios-alert__content { padding: 22px var(--space-20) var(--space-16); }
+.ios-alert__title { font-size: 17px; line-height: 22px; font-weight: 600; letter-spacing: -0.41px; margin: 0; }
+.ios-alert__message { font-size: 13px; line-height: 18px; letter-spacing: -0.08px; margin: 4px 0 0; }
+.ios-alert__actions { display: flex; gap: var(--space-8); padding: 0 var(--space-12); }
+.ios-alert__actions--stacked { flex-direction: column; }
+.ios-alert__actions--stacked .ios-alert__btn { flex: none; }
+.ios-alert__btn { flex: 1; height: 44px; border: 0; border-radius: var(--radius-full); font-family: inherit; font-size: 17px; letter-spacing: -0.41px; color: var(--tint); cursor: pointer;
+  background: var(--glass-bg-subtle); box-shadow: inset 0 0 0 0.5px var(--glass-border); transition: transform .15s ease; }
+.ios-alert__btn--cancel { font-weight: 600; background: var(--glass-tint); color: #ffffff; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.ios-alert__btn--destructive { color: var(--system-red); }
+.ios-alert__btn:active { transform: scale(0.97); }

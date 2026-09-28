@@ -1,0 +1,11 @@
+{
+  "name": "Antre-in",
+  "short_name": "Antre-in",
+  "description": "Pesan minuman dari HP, bayar online, ambil tanpa antre.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#007aff",
+  "lang": "id",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
