@@ -9,3 +9,9 @@ export async function appUrl() {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${proto}://${host}`;
 }
+
+/** IP klien dari header proxy (diisi Vercel di produksi); null secara lokal atau tanpa proxy. */
+export async function clientIp() {
+  const h = await headers();
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+}

@@ -102,6 +102,7 @@ create table if not exists orders (
   user_id uuid references users(id) on delete set null,
   customer_name text not null,
   customer_phone text not null,
+  client_ip text,                               -- untuk rate limit pemesanan; null bila header tidak tersedia (mis. lokal)
   status text not null default 'awaiting_payment'
     check (status in ('awaiting_payment','queued','preparing','ready','picked_up','cancelled','expired')),
   queue_no int,                                 -- diberikan saat pembayaran berhasil
@@ -124,6 +125,7 @@ create table if not exists orders (
   cancelled_at timestamptz,
   unique (queue_day, queue_no)
 );
+alter table orders add column if not exists client_ip text; -- migrasi untuk database yang sudah ada sebelum kolom ini
 create index if not exists orders_status on orders(status);
 create index if not exists orders_created on orders(created_at);
 create index if not exists orders_user on orders(user_id);

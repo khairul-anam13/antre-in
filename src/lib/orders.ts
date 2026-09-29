@@ -87,11 +87,25 @@ export async function getPickupOptions(drinks: number, db: Sql = sql): Promise<P
 
 const cleanPhone = (p: string) => p.replace(/[\s\-().]/g, "");
 
-export type NewOrder = { items: LineInput[]; voucher?: string; name: string; phone: string; note?: string; slot?: string | null; user: User | null };
+// Rate limit anti-spam: dihitung dari baris orders (berhasil ATAU tidak) yang sudah tersimpan — sengaja lewat DB,
+// bukan Map di memori, supaya tetap benar walau aplikasi jalan di banyak instance serverless (Vercel).
+const ORDER_RATE_WINDOW_MIN = 10;
+const ORDER_RATE_MAX = 3; // percobaan per nomor HP ATAU per alamat IP dalam jendela waktu ini
+
+async function checkOrderRateLimit(tx: Sql, phone: string, ip: string | null) {
+  const [{ n }] = await tx`
+    select count(*)::int n from orders
+    where created_at > now() - make_interval(mins => ${ORDER_RATE_WINDOW_MIN}::int)
+      and (customer_phone = ${phone} or client_ip = ${ip})`;
+  if (n >= ORDER_RATE_MAX) throw new PriceError("Terlalu banyak percobaan memesan. Coba lagi dalam beberapa menit.");
+}
+
+export type NewOrder = { items: LineInput[]; voucher?: string; name: string; phone: string; note?: string; slot?: string | null; user: User | null; ip?: string | null };
 
 export async function createOrder(input: NewOrder, appUrl: string): Promise<{ id: string; token: string; url: string }> {
   const name = input.name.trim();
   const phone = cleanPhone(input.phone);
+  const ip = input.ip ?? null;
   if (name.length < 1 || name.length > 60) throw new PriceError("Isi nama pemesan");
   if (!/^\+?\d{8,15}$/.test(phone)) throw new PriceError("Nomor HP tidak valid");
   if (!midtransEnabled && !mockPayments) throw new PriceError("Pembayaran online belum dikonfigurasi");
@@ -101,6 +115,7 @@ export async function createOrder(input: NewOrder, appUrl: string): Promise<{ id
     const tx = t as unknown as Sql; // TransactionSql dipakai persis seperti Sql
     // ponytail: satu kunci global menyerialkan pembuatan pesanan (cukup untuk 1 kedai). Ganti kunci per-slot bila throughput naik.
     await tx`select pg_advisory_xact_lock(42)`;
+    await checkOrderRateLimit(tx, phone, ip);
     const s = await getSettings(tx);
     const q = await quote(input.items, input.voucher, tx);
     if (q.drinks > s.max_drinks_per_order) throw new PriceError(`Maksimal ${s.max_drinks_per_order} minuman per pesanan`);
@@ -124,8 +139,8 @@ export async function createOrder(input: NewOrder, appUrl: string): Promise<{ id
       if (!r.length) throw new PriceError("Kuota voucher sudah habis");
     }
     const [o] = await tx`
-      insert into orders (token, user_id, customer_name, customer_phone, subtotal, discount, total, voucher_code, scheduled_for, note, payment_expires_at)
-      values (${token}, ${input.user?.id ?? null}, ${name}, ${phone}, ${q.subtotal}, ${q.discount}, ${q.total}, ${q.voucher}, ${scheduled},
+      insert into orders (token, user_id, customer_name, customer_phone, client_ip, subtotal, discount, total, voucher_code, scheduled_for, note, payment_expires_at)
+      values (${token}, ${input.user?.id ?? null}, ${name}, ${phone}, ${ip}, ${q.subtotal}, ${q.discount}, ${q.total}, ${q.voucher}, ${scheduled},
               ${(input.note ?? "").trim().slice(0, 200)}, now() + make_interval(mins => ${s.payment_expiry_minutes}::int))
       returning id`;
     await tx`insert into order_items ${tx(q.lines.map((l) => ({ order_id: o.id, product_id: l.productId, name: l.name, unit_price: l.unit_price, qty: l.qty, options: tx.json(l.options), note: l.note })))}`;

@@ -1,9 +1,9 @@
 // Tes integrasi jalur uang & antrean terhadap Postgres NYATA (bukan mock).
-// Jalankan: npm run test:db   (butuh database kosong berskema; default antre_in_test di port 5433, atau set TEST_DATABASE_URL)
+// Jalankan: npm run test:db   (butuh database kosong berskema; default antre_in_test di localhost:5432, atau set TEST_DATABASE_URL)
 import { test, beforeEach, after } from "node:test";
 import assert from "node:assert/strict";
 
-process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? "postgres://antre@127.0.0.1:5433/antre_in_test";
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL ?? "postgres://antre:antre_dev_local@127.0.0.1:5432/antre_in_test";
 delete process.env.MIDTRANS_SERVER_KEY; // paksa mode simulasi
 const { sql } = await import("../../src/lib/db.ts");
 const o = await import("../../src/lib/orders.ts");
@@ -100,7 +100,8 @@ test("transisi status hanya maju & estimasi mengikuti antrean", async () => {
 test("konkurensi: 6 pemesan berebut slot berkuota 3 → tepat 3 berhasil; markPaid ganda → 1 nomor", async (t) => {
   const { slots } = await o.getPickupOptions(1);
   if (!slots.length) return t.skip("tidak ada slot tersisa hari ini");
-  const res = await Promise.allSettled(Array.from({ length: 6 }, () => order({ items: [item(8, 1)], slot: slots[0].start })));
+  // nomor HP berbeda tiap percobaan: isolasi dari rate limit, murni menguji kuota slot
+  const res = await Promise.allSettled(Array.from({ length: 6 }, (_, i) => order({ items: [item(8, 1)], slot: slots[0].start, phone: `0800000${String(i).padStart(4, "0")}` })));
   assert.equal(res.filter((r) => r.status === "fulfilled").length, 3);
 
   const a = await order();
@@ -108,6 +109,16 @@ test("konkurensi: 6 pemesan berebut slot berkuota 3 → tepat 3 berhasil; markPa
   const rows = await sql`select queue_no from orders where id = ${a.id}`;
   assert.equal(rows[0].queue_no, 1);
   assert.equal((await sql`select last from queue_counters`)[0].last, 1);
+});
+
+test("rate limit: menolak setelah 3 percobaan dari nomor atau IP yang sama dalam 10 menit", async () => {
+  await order(); await order(); await order();
+  await assert.rejects(order(), /[Tt]erlalu banyak/);
+  await order({ phone: "089999999999" }); // nomor lain tidak terpengaruh
+
+  const ip = "203.0.113.9";
+  await order({ phone: "081111111112", ip }); await order({ phone: "081111111113", ip }); await order({ phone: "081111111114", ip });
+  await assert.rejects(order({ phone: "081111111115", ip }), /[Tt]erlalu banyak/); // nomor beda, IP sama → tetap kena
 });
 
 test("pembayaran yang telat (setelah kedaluwarsa) tetap diterima", async () => {

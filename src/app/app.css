@@ -157,6 +157,54 @@ select.field { appearance: none; }
 
 /* ---------- Dialog / toast ---------- */
 .scrim { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--dim); padding: var(--space-16); }
+
+/* ---------- Welcome screen (ekstensi lokal, bertema kedai minuman: kaca DS + gelembung + splash) ---------- */
+.welcome { width: 100%; max-width: 360px; }
+.welcome-scrim { overflow: hidden; animation: welcomeScrimIn .35s ease-out both; }
+.welcome-scrim--closing { animation: welcomeScrimOut .26s ease-in both; pointer-events: none; }
+@keyframes welcomeScrimIn { from { opacity: 0; } }
+@keyframes welcomeScrimOut { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .welcome-scrim, .welcome-scrim--closing { animation: none; } }
+
+.welcome-card { animation: welcomeCardIn .6s cubic-bezier(.34, 1.56, .64, 1) both; }
+.welcome-card--closing { animation: welcomeCardOut .24s ease-in both; }
+@keyframes welcomeCardIn {
+  0% { opacity: 0; transform: translateY(28px) scale(.82) rotate(-2deg); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.03) rotate(1deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+@keyframes welcomeCardOut { to { opacity: 0; transform: translateY(18px) scale(.9) rotate(2deg); } }
+@media (prefers-reduced-motion: reduce) { .welcome-card, .welcome-card--closing { animation: none; } }
+
+/* Ikon cangkir "meletup" masuk lalu memancarkan cincin riak — seperti tetes jatuh ke minuman. */
+.welcome-tile { position: relative; animation: welcomeTilePop .6s .1s cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes welcomeTilePop { from { opacity: 0; transform: scale(.4) rotate(-8deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+.welcome-tile::after {
+  content: ""; position: absolute; inset: -6px; border-radius: inherit; pointer-events: none;
+  border: 2px solid var(--system-blue); opacity: 0;
+  animation: welcomeSplash .8s .38s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes welcomeSplash { 0% { transform: scale(.6); opacity: .55; } 100% { transform: scale(1.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .welcome-tile { animation: none; } .welcome-tile::after { animation: none; display: none; } }
+
+.welcome-dot { animation: pulse 1.8s ease-in-out infinite; }
+.welcome-dot.dot--off { animation: none; }
+@media (prefers-reduced-motion: reduce) { .welcome-dot { animation: none; } }
+
+/* Gelembung soda/boba naik pelan di balik kaca — glassmorphism butuh sesuatu bergerak di baliknya agar tidak terasa datar. */
+.welcome-bubble {
+  position: absolute; bottom: -8%; border-radius: 999px; pointer-events: none;
+  background: color-mix(in srgb, var(--system-cyan) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 40%, transparent);
+  animation-name: welcomeBubbleRise; animation-timing-function: ease-in; animation-iteration-count: infinite;
+}
+@keyframes welcomeBubbleRise {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  12% { opacity: .6; }
+  88% { opacity: .3; }
+  100% { transform: translateY(-115vh) scale(1.3); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .welcome-bubble { animation: none; display: none; } }
 .toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 60; max-width: calc(100% - 32px); padding: 10px var(--space-16); border-radius: var(--radius-full);
   background: var(--glass-bg-strong); color: var(--label); font-size: 15px; font-weight: 600; box-shadow: inset 0 1px 0 var(--glass-highlight), inset 0 0 0 0.5px var(--glass-border), var(--shadow-glass);
   -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); backdrop-filter: blur(var(--blur-glass-strong)) saturate(180%); }

@@ -29,6 +29,8 @@ npm run db -- setup               # skema + menu demo + akun admin (aman diulang
 npm run dev                       # http://localhost:3000
 ```
 
+Database lokal memakai Postgres 17 yang sudah terpasang di komputer ini (service `postgresql-x64-17`, port 5432), dengan role terbatas `antre` (bukan superuser `postgres`) yang hanya punya akses ke database `antre_in`. Ini **permanen** — beda dari Postgres sementara yang pernah dipakai untuk pengujian awal dan mati saat sesi berakhir. Kredensial ada di `.env.local` (tidak masuk git).
+
 Tanpa kunci Midtrans, halaman bayar berupa **simulasi** (hanya di development — otomatis mati di produksi). Login staf di `/masuk`, pelanggan Google butuh `GOOGLE_CLIENT_ID/SECRET`.
 
 Perintah lain: `npm run db -- reset --yes` (hapus semua data lokal), `npm run tokens` (generate ulang token CSS dari `design/tokens.json`), `npm run typecheck`, `npm run build`.
@@ -40,7 +42,7 @@ npm test          # logika murni: harga, voucher, slot, estimasi (tanpa DB)
 npm run test:db   # jalur uang & antrean di Postgres nyata (kuota slot, voucher, konkurensi, kedaluwarsa)
 ```
 
-`test:db` memakai database **terpisah** dan menghapus datanya. Buat DB kosong, jalankan `DATABASE_URL=<url tes> npm run db -- setup`, lalu set `TEST_DATABASE_URL` (default: `postgres://antre@127.0.0.1:5433/antre_in_test`).
+`test:db` memakai database **terpisah** dan menghapus datanya. Buat DB kosong, jalankan `DATABASE_URL=<url tes> npm run db -- setup`, lalu set `TEST_DATABASE_URL` (default: `postgres://antre:antre_dev_local@127.0.0.1:5432/antre_in_test`, database dev lokal — lihat bagian "Jalankan lokal").
 
 ## Deploy (Vercel + Supabase/Neon)
 
@@ -72,6 +74,7 @@ npm run test:db   # jalur uang & antrean di Postgres nyata (kuota slot, voucher,
 - **Jadwalkan** memakai slot berkuota (mis. 15 menit, maks. 12 minuman). Kuota inilah yang meratakan lonjakan. Pesanan terjadwal baru tampil di layar barista N menit sebelum jam ambil (`schedule_lead_minutes`).
 - Pesanan belum dibayar kedaluwarsa otomatis (default 30 menit); kuota voucher & slot dikembalikan. Pembayaran yang telat masuk tetap diterima.
 - Pembuatan pesanan diserialkan dengan advisory lock Postgres → tak bisa kelebihan kuota walau banyak orang memesan bersamaan (dibuktikan di `test:db`).
+- **Anti-spam:** maksimal 3 percobaan pesan per 10 menit per nomor HP *atau* per alamat IP (mana pun tercapai dulu) — dihitung dari tabel `orders` sendiri, jadi konsisten walau aplikasi jalan di banyak instance serverless. Batas ini ada di kode (`ORDER_RATE_WINDOW_MIN`/`ORDER_RATE_MAX` di `src/lib/orders.ts`), bukan di halaman Pengaturan.
 
 ## Batasan yang perlu diketahui
 
@@ -79,7 +82,7 @@ npm run test:db   # jalur uang & antrean di Postgres nyata (kuota slot, voucher,
 - **Refund manual** — membatalkan pesanan berbayar menandainya batal dan memberi tahu pelanggan; pengembalian dana dilakukan lewat dashboard Midtrans.
 - **Push di iPhone** hanya bekerja bila situs dipasang ke Layar Utama (iOS 16.4+). Halaman pelacakan tetap jalan tanpa push.
 - Gambar menu berupa **URL** (tanpa upload). Bila perlu upload, tambahkan Supabase Storage.
-- Tidak ada rate-limit selain kunci login staf (5 gagal → 15 menit) dan batas jumlah per pesanan.
+- Rate-limit: kunci login staf (5 gagal → 15 menit) dan anti-spam pemesanan (3 percobaan/10 menit per nomor HP atau IP, lihat "Cara kerja antrean"). Tidak ada rate-limit di rute lain (mis. pencarian menu).
 - Semua rute dinamis (`ƒ`) — tidak ada halaman yang dirender saat build, jadi build tidak butuh database.
 
 ## Struktur

@@ -4,7 +4,7 @@ import { destroySession, getUser, loginStaff } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import { PriceError, createOrder, getOrderFor, getPickupOptions, markPaid, cancelUnpaid, parseItems, quote, type Pickup, type Quote } from "@/lib/orders";
 import { mockPayments } from "@/lib/midtrans";
-import { appUrl } from "@/lib/url";
+import { appUrl, clientIp } from "@/lib/url";
 
 import type { FormState } from "@/lib/form";
 
@@ -29,11 +29,11 @@ export type PlaceInput = { items: unknown; voucher?: string; name: string; phone
 
 export async function placeOrder(raw: PlaceInput): Promise<{ ok: true; id: string; token: string; url: string } | { ok: false; error: string }> {
   try {
-    const user = await getUser();
+    const [user, ip, app] = await Promise.all([getUser(), clientIp(), appUrl()]);
     const r = await createOrder({
       items: parseItems(raw.items), voucher: String(raw.voucher ?? ""), name: String(raw.name ?? ""), phone: String(raw.phone ?? ""),
-      note: String(raw.note ?? ""), slot: raw.slot ? String(raw.slot) : null, user,
-    }, await appUrl());
+      note: String(raw.note ?? ""), slot: raw.slot ? String(raw.slot) : null, user, ip,
+    }, app);
     if (user?.role === "customer") await sql`update users set name = ${String(raw.name).trim().slice(0, 60)}, phone = ${String(raw.phone).trim()} where id = ${user.id}`;
     return { ok: true, ...r };
   } catch (e) {
